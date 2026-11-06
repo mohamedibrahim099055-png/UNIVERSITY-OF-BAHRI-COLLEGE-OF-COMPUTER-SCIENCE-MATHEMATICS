@@ -1,39 +1,3 @@
-// ... existing code ...
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-// تهيئة Firebase باستخدام المعرفات العالمية المتاحة في النظام
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'bahri-csm-app-default';
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-
-let app, db, auth;
-let isFirebaseInitialized = false;
-
-try {
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
-    isFirebaseInitialized = true;
-} catch (e) {
-    console.warn("Firebase initialization warning (falling back to local session):", e);
-}
-
-// دالة المصادقة التلقائية لـ Firebase وفقاً للقواعد الصارمة
-async function initFirebaseAuth() {
-    if (!isFirebaseInitialized) return;
-    try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-            await signInAnonymously(auth);
-        }
-    } catch (err) {
-        console.error("Auth error:", err);
-    }
-}
-initFirebaseAuth();
-
 let currentRole = 'student';
 let currentTab = 'timetable';
 let selectedYear = '1';
@@ -128,7 +92,7 @@ const sharedSubjectsConfig = {
     }
 };
 
-// جداول المحاضرات التخصصية للسنة 3 و 4 و 5 لكل تخصص براهو
+// جداول المحاضرات التخصصية للسنة 3 و 4 و 5 لكل تخصص براه
 const timetableSpecSchedules = {
     '3': {
         cs: [
@@ -231,33 +195,9 @@ let materials = [
     { id: 4, target: 'y2', year: '2', title: 'شيت هياكل البيانات - List & Array', subject: 'هياكل البيانات والخوارزميات (1)', doctor: 'د. طارق زياد', size: '1.8 MB', fileUrl: '', fileName: '' }
 ];
 
-// جلب البيانات الفورية السحابية من فايرستور عبر الاستماع المباشر
-function initRealtimeFirestoreSync() {
-    if (!isFirebaseInitialized) return;
-    try {
-        const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'bahri_cloud_materials');
-        const q = query(colRef);
-        onSnapshot(q, (snapshot) => {
-            const cloudItems = [];
-            snapshot.forEach((doc) => {
-                cloudItems.push({ id: doc.id, ...doc.data() });
-            });
-            if (cloudItems.length > 0) {
-                materials = [...cloudItems, ...materials];
-                renderContent();
-            }
-        }, (error) => {
-            console.error("Firestore sync error:", error);
-        });
-    } catch (e) {
-        console.warn("Could not setup realtime sync:", e);
-    }
-}
-
 function initApp() {
     renderYearsBar();
     renderContent();
-    initRealtimeFirestoreSync();
 }
 
 function renderYearsBar() {
@@ -431,7 +371,7 @@ function handleSearch(q) {
     renderContent();
 }
 
-async function handleUploadSubmit(e) {
+function handleUploadSubmit(e) {
     e.preventDefault();
     const title = document.getElementById('up-title').value;
     const yearVal = document.getElementById('up-year').value;
@@ -444,54 +384,37 @@ async function handleUploadSubmit(e) {
 
     const uploadedFile = fileInput.files[0];
     const fileSizeMB = (uploadedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
-    
-    // قراءة الملف وتحويله إلى Base64 ليتم حفظه سحابياً عبر فايرستور ومشاركته مع كل الطلاب
-    const reader = new FileReader();
-    reader.onload = async function(event) {
-        const fileBase64Url = event.target.result;
+    const fileUrl = URL.createObjectURL(uploadedFile);
 
-        let subjectStr = '';
-        const selectEl = document.getElementById('up-subject-select');
-        const textEl = document.getElementById('up-subject-text');
+    let subjectStr = '';
+    const selectEl = document.getElementById('up-subject-select');
+    const textEl = document.getElementById('up-subject-text');
 
-        if (selectEl) {
-            subjectStr = selectEl.value;
-        } else if (textEl) {
-            subjectStr = textEl.value;
-        }
+    if (selectEl) {
+        subjectStr = selectEl.value;
+    } else if (textEl) {
+        subjectStr = textEl.value;
+    }
 
-        const cleanSubjectName = subjectStr.split(' [')[0];
+    const cleanSubjectName = subjectStr.split(' [')[0];
 
-        const newMat = {
-            id: 'cloud_' + Date.now(),
-            target: `y${yearVal}`,
-            year: yearVal,
-            title: title,
-            subject: cleanSubjectName,
-            doctor: 'د. داليا طه إبراهيم',
-            size: fileSizeMB,
-            fileUrl: fileBase64Url,
-            fileName: uploadedFile.name,
-            createdAt: new Date().toISOString()
-        };
-
-        // رفع البيانات إلى قاعدة بيانات فايرستور السحابية
-        if (isFirebaseInitialized && auth && auth.currentUser) {
-            try {
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'bahri_cloud_materials');
-                await addDoc(colRef, newMat);
-            } catch (err) {
-                console.error("Error saving to cloud:", err);
-            }
-        }
-
-        materials.unshift(newMat);
-        e.target.reset();
-        onUploadYearChange(yearVal);
-        showToast(`تم رفع الملف وحفظه سحابياً بنجاح في مادة: ${cleanSubjectName}!`);
-        renderContent();
+    const newMat = {
+        id: Date.now(),
+        target: `y${yearVal}`,
+        year: yearVal,
+        title: title,
+        subject: cleanSubjectName,
+        doctor: 'د. داليا طه إبراهيم',
+        size: fileSizeMB,
+        fileUrl: fileUrl,
+        fileName: uploadedFile.name
     };
-    reader.readAsDataURL(uploadedFile);
+
+    materials.unshift(newMat);
+    e.target.reset();
+    onUploadYearChange(yearVal);
+    showToast(`تم رفع الملف الحقيقي (${uploadedFile.name}) بنجاح للمادة: ${cleanSubjectName}!`);
+    renderContent();
 }
 
 function downloadRealFile(fileUrl, fileName, title) {
