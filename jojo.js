@@ -189,10 +189,10 @@ const specializedConfig = {
 };
 
 let materials = [
-    { id: 1, target: 'cs_shared', year: '3', title: 'سلايدات المحاضرة الأولى - نظم التشغيل', subject: 'نظم التشغيل (Operating Systems)', doctor: 'د. خالد عبد الرحيم', size: '3.5 MB' },
-    { id: 2, target: 'cs', year: '3', title: 'شيت العملي - الذكاء الاصطناعي', subject: 'الذكاء الاصطناعي والشبكات العصبية', doctor: 'د. طارق زياد', size: '2.1 MB' },
-    { id: 3, target: 'y1', year: '1', title: 'مقدمة في علوم الحاسوب - المحاضرة 1', subject: 'مقدمة في علوم الحاسوب والبرمجة', doctor: 'د. داليا طه إبراهيم', size: '4.2 MB' },
-    { id: 4, target: 'y2', year: '2', title: 'شيت هياكل البيانات - List & Array', subject: 'هياكل البيانات والخوارزميات (1)', doctor: 'د. طارق زياد', size: '1.8 MB' }
+    { id: 1, target: 'cs_shared', year: '3', title: 'سلايدات المحاضرة الأولى - نظم التشغيل', subject: 'نظم التشغيل (Operating Systems)', doctor: 'د. خالد عبد الرحيم', size: '3.5 MB', fileUrl: '', fileName: '' },
+    { id: 2, target: 'cs', year: '3', title: 'شيت العملي - الذكاء الاصطناعي', subject: 'الذكاء الاصطناعي والشبكات العصبية', doctor: 'د. طارق زياد', size: '2.1 MB', fileUrl: '', fileName: '' },
+    { id: 3, target: 'y1', year: '1', title: 'مقدمة في علوم الحاسوب - المحاضرة 1', subject: 'مقدمة في علوم الحاسوب والبرمجة', doctor: 'د. داليا طه إبراهيم', size: '4.2 MB', fileUrl: '', fileName: '' },
+    { id: 4, target: 'y2', year: '2', title: 'شيت هياكل البيانات - List & Array', subject: 'هياكل البيانات والخوارزميات (1)', doctor: 'د. طارق زياد', size: '1.8 MB', fileUrl: '', fileName: '' }
 ];
 
 function initApp() {
@@ -250,11 +250,15 @@ function onUploadYearChange(yr) {
                     <option value="sem2">السمستر الثاني (7 مواد)</option>
                 </select>
             </div>
-            <div class="md:col-span-2">
+            <div>
                 <label class="block text-xs font-bold text-slate-300 mb-1">اختر المادة المحددة تنزل فيها المحاضرة *</label>
                 <select id="up-subject-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-emerald-400 font-bold focus:outline-none">
                     <!-- يضاف آلياً -->
                 </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">اختر الملف الحقيقي (PDF, Docx, Zip) *</label>
+                <input type="file" id="up-file-input" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-300 focus:outline-none">
             </div>
         `;
         updateSubListForYear12(yr, 'sem1');
@@ -272,19 +276,27 @@ function onUploadYearChange(yr) {
                     <option value="spec_stat">تخصص الإحصاء (Stat)</option>
                 </select>
             </div>
-            <div class="md:col-span-2">
+            <div>
                 <label class="block text-xs font-bold text-slate-300 mb-1">اختر المادة المستهدفة مباشرة *</label>
                 <select id="up-subject-select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-amber-300 font-bold focus:outline-none">
                     <!-- يضاف آلياً -->
                 </select>
             </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">اختر الملف الحقيقي (PDF, Docx, Zip) *</label>
+                <input type="file" id="up-file-input" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-300 focus:outline-none">
+            </div>
         `;
         updateSubListForYear34(yr, 'shared_cs');
     } else {
         container.innerHTML = `
-            <div class="md:col-span-3">
+            <div class="md:col-span-2">
                 <label class="block text-xs font-bold text-slate-300 mb-1">اسم ومادة مشروع التخرج للسنة الخامسة (كود 0018) *</label>
-                <input type="text" id="up-subject-text" required placeholder="مثال: CS0018-501 - مشروع التخرج والبحث التطبيقي" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none">
+                <input type="text" id="up-subject-text" required placeholder="مثال: CS0018-501 - مشروع التخرج والبحث التطبيقي" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-300 mb-1">اختر الملف الحقيقي *</label>
+                <input type="file" id="up-file-input" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-2 py-1.5 text-xs text-slate-300 focus:outline-none">
             </div>
         `;
     }
@@ -363,7 +375,17 @@ function handleUploadSubmit(e) {
     e.preventDefault();
     const title = document.getElementById('up-title').value;
     const yearVal = document.getElementById('up-year').value;
-    
+    const fileInput = document.getElementById('up-file-input');
+
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        showToast('يرجى اختيار ملف حقيقي من جهازك قبل الضغط على رفع!');
+        return;
+    }
+
+    const uploadedFile = fileInput.files[0];
+    const fileSizeMB = (uploadedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
+    const fileUrl = URL.createObjectURL(uploadedFile);
+
     let subjectStr = '';
     const selectEl = document.getElementById('up-subject-select');
     const textEl = document.getElementById('up-subject-text');
@@ -383,14 +405,30 @@ function handleUploadSubmit(e) {
         title: title,
         subject: cleanSubjectName,
         doctor: 'د. داليا طه إبراهيم',
-        size: '3.2 MB'
+        size: fileSizeMB,
+        fileUrl: fileUrl,
+        fileName: uploadedFile.name
     };
 
     materials.unshift(newMat);
     e.target.reset();
     onUploadYearChange(yearVal);
-    showToast(`تم رفع المحاضرة (${title}) بنجاح وتنزل فوراً لمادة: ${cleanSubjectName}!`);
+    showToast(`تم رفع الملف الحقيقي (${uploadedFile.name}) بنجاح للمادة: ${cleanSubjectName}!`);
     renderContent();
+}
+
+function downloadRealFile(fileUrl, fileName, title) {
+    if (!fileUrl) {
+        showToast(`ملف افتراضي: جاري تحميل ${title}`);
+        return;
+    }
+    const a = document.createElement('a');
+    a.href = fileUrl;
+    a.download = fileName || title || 'lecture_file';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast(`جاري تنزيل الملف الحقيقي: ${fileName}`);
 }
 
 function showToast(msg) {
@@ -533,7 +571,7 @@ function renderMaterialsLibrary(container) {
                                                 <span class="truncate text-slate-200 block font-bold text-[11px]">${f.title}</span>
                                                 <span class="text-[10px] text-slate-400">${f.doctor} • ${f.size}</span>
                                             </div>
-                                            <button onclick="showToast('جاري تحميل: ${f.title}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold shrink-0">تحميل</button>
+                                            <button onclick="downloadRealFile('${f.fileUrl}', '${f.fileName}', '${f.title}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold shrink-0">تحميل الملف</button>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -581,7 +619,7 @@ function renderMaterialsLibrary(container) {
                                                         <span class="truncate text-slate-200 block font-bold text-[11px]">${f.title}</span>
                                                         <span class="text-[10px] text-slate-400">${f.doctor} • ${f.size}</span>
                                                     </div>
-                                                    <button onclick="showToast('جاري تحميل: ${f.title}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold shrink-0">تحميل</button>
+                                                    <button onclick="downloadRealFile('${f.fileUrl}', '${f.fileName}', '${f.title}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold shrink-0">تحميل الملف</button>
                                                 </div>
                                             `).join('')}
                                         </div>
@@ -616,7 +654,7 @@ function renderMaterialsLibrary(container) {
                                                             ${files.length === 0 ? '<p class="text-[10px] text-slate-500">لا توجد ملفات تخصصية مرفوعة بعد.</p>' : files.map(f => `
                                                                 <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-900">
                                                                     <span class="text-slate-300 text-[11px] truncate">${f.title}</span>
-                                                                    <button onclick="showToast('جاري تحميل: ${f.title}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-bold shrink-0">تحميل</button>
+                                                                    <button onclick="downloadRealFile('${f.fileUrl}', '${f.fileName}', '${f.title}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-bold shrink-0">تحميل الملف</button>
                                                                 </div>
                                                             `).join('')}
                                                         </div>
