@@ -1,0 +1,43 @@
+/* التنسيقات العامة والخطوط */
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #030712;
+    color: #f3f4f6;
+}
+
+/* بطاقات الزجاج الشفاف */
+.glass-panel {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+/* التدرج اللونى للشعار والأزرار المميزة */
+.custom-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 50%, #f59e0b 100%);
+}
+
+/* تخصيص شريط التمرير */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #030712;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}
+
+/* تأثيرات انتقالية للبطاقات والأزرار */
+button, input, select {
+    transition: all 0.2s ease-in-out;
+}
